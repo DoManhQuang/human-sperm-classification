@@ -1,6 +1,9 @@
 import os
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
+import sys
+sys.path.append('../human-sperm-classification')
+
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import numpy as np
 import tensorflow as tf
 import tensorflow_addons as tfa
@@ -13,7 +16,6 @@ from sklearn.model_selection import train_test_split
 from core.utils import load_data, set_gpu_limit, get_callbacks_list, write_score_kfold
 from core.model import model_classification
 from sklearn import preprocessing
-
 
 # tf.keras.utils.plot_model(model)
 
