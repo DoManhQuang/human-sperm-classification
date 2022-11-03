@@ -77,6 +77,11 @@ weights_init = model.get_weights()
 print("model loading done!!")
 
 # created folder
+
+if not os.path.exists(training_path):
+    os.makedirs(training_path)
+    print("created folder : ", training_path)
+
 training_path = os.path.join(training_path, model_name)
 if not os.path.exists(training_path):
     os.makedirs(training_path)
@@ -90,6 +95,11 @@ if not os.path.exists(training_path):
 if not os.path.exists(os.path.join(training_path, 'model-save')):
     os.makedirs(os.path.join(training_path, 'model-save'))
     print("created folder : ", os.path.join(training_path, 'model-save'))
+
+
+if not os.path.exists(result_path):
+    os.makedirs(result_path)
+    print("created folder : ", result_path)
 
 
 result_path = os.path.join(result_path, model_name)
