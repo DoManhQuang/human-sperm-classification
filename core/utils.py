@@ -229,11 +229,11 @@ def save_results_to_csv(results, directory="/home/quangdm/rnd/dataset/mail_spamh
     pass
 
 
-def write_score_kfold(path="test.txt", mode_write="a", rows="STT", cols=[1.0, 2.0, 3.0]):
-    file_kfold = open(path, mode_write)
-    file_kfold.write(str(rows) + "*")
+def write_score(path="test.txt", mode_write="a", rows="STT", cols=[1.0, 2.0, 3.0]):
+    file = open(path, mode_write)
+    file.write(str(rows) + "*")
     for col in cols:
-        file_kfold.write(str(col) + "*")
-    file_kfold.write("\n")
-    file_kfold.close()
+        file.write(str(col) + "*")
+    file.write("\n")
+    file.close()
     pass
