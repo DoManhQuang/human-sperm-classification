@@ -1,37 +1,31 @@
 import os
-
 import sys
-sys.path.append('../human-sperm-classification')
+ROOT = os.getcwd()
+if str(ROOT) not in sys.path:
+    sys.path.append(str(ROOT))
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import numpy as np
 import tensorflow as tf
 import tensorflow_addons as tfa
-from keras import Input
-from keras.layers import Dense
-from keras.layers import Dropout, GlobalAveragePooling2D
-from keras.models import Model
 from sklearn.metrics import roc_auc_score, f1_score, accuracy_score
-from sklearn.model_selection import train_test_split
-from core.utils import load_data, set_gpu_limit, get_callbacks_list, write_score_kfold
-from core.model import model_classification
 from sklearn import preprocessing
-
-# tf.keras.utils.plot_model(model)
+from core.utils import load_data, set_gpu_limit, get_callbacks_list, write_score
+from core.model import model_classification
 
 
 # # Parse command line arguments
 parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
 parser.add_argument("-m", "--memory", default=0, type=int, help="set gpu memory limit")
 parser.add_argument("-v", "--version", default="version-0.0", help="version running")
-parser.add_argument("-rp", "--result_path", default="../runs/results", help="path result ")
-parser.add_argument("-tp", "--training_path", default="../runs/training", help="path training model")
+parser.add_argument("-rp", "--result_path", default="./runs/results", help="path result ")
+parser.add_argument("-tp", "--training_path", default="./runs/training", help="path training model")
 parser.add_argument("-ep", "--epochs", default=1, type=int, help="epochs training")
 parser.add_argument("-bsize", "--bath_size", default=32, type=int, help="bath size training")
 parser.add_argument("-verbose", "--verbose", default=1, type=int, help="verbose training")
-parser.add_argument("-train", "--train_data_path", default="../dataset/smids/SMIDS/dataset/smids_train.data", help="data training")
-parser.add_argument("-val", "--val_data_path", default="../dataset/smids/SMIDS/dataset/smids_valid.data", help="data val")
-parser.add_argument("-test", "--test_data_path", default="../dataset/smids/SMIDS/dataset/smids_datatest.data", help="data test")
+parser.add_argument("-train", "--train_data_path", default="./dataset/smids/SMIDS/dataset/smids_train.data", help="data training")
+parser.add_argument("-val", "--val_data_path", default="./dataset/smids/SMIDS/dataset/smids_valid.data", help="data val")
+parser.add_argument("-test", "--test_data_path", default="./dataset/smids/SMIDS/dataset/smids_datatest.data", help="data test")
 parser.add_argument("-name", "--name_model", default="model_ai_name", help="model name")
 # parser.add_argument("-cls", "--number_class", default=3, type=int, help="number class")
 args = vars(parser.parse_args())
@@ -169,16 +163,16 @@ auc_score = 0
 # else:
 #     auc_score = roc_auc_score(y_true, y_target, multi_class='ovr', labels=np.unique(global_labels_train).shape)
 
-write_score_kfold(path=os.path.join(result_path, file_result),
-                  mode_write="a",
-                  rows="STT",
-                  cols=['F1', 'Acc'])
+write_score(path=os.path.join(result_path, file_result),
+            mode_write="a",
+            rows="STT",
+            cols=['F1', 'Acc'])
 
-write_score_kfold(path=os.path.join(result_path, file_result),
-                  mode_write="a",
-                  rows="results",
-                  cols=np.around([f1_score(y_true, y_target, average='weighted'),
-                                  accuracy_score(y_true, y_target)], decimals=4))
+write_score(path=os.path.join(result_path, file_result),
+            mode_write="a",
+            rows="results",
+            cols=np.around([f1_score(y_true, y_target, average='weighted'),
+                            accuracy_score(y_true, y_target)], decimals=4))
 print("save results done!!")
 print("History training loading ...")
 cmd = 'tensorboard --logdir "path-tensorboard-logs/"'
