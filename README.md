@@ -11,3 +11,8 @@ pip install -r requirement.txt
 ```commandline
 python tools/train.py -v "version-0.0" -ep 10 -bsize 16 -verbose 1 -train "dataset/smids/smids_train.data" -val "dataset/smids/smids_valid.data" -test "dataset/smids/smids_datatest.data" -name "smids-dataset"
 ```
+
+### K-Fold
+```commandline
+python tools/kfold.py -v "version-0.1" -ep 5 -bsize 16 -verbose 1 -train "dataset/smids_datatrain.data" -test "dataset/smids_datatest.data" -name "name-kfold" -nk 10 -ck 1
+```
