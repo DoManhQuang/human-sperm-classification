@@ -1,15 +1,16 @@
 import os
-import sys
-ROOT = os.getcwd()
-if str(ROOT) not in sys.path:
-    sys.path.append(str(ROOT))
-
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import numpy as np
 import tensorflow as tf
 import tensorflow_addons as tfa
 from sklearn.metrics import roc_auc_score, f1_score, accuracy_score
 from sklearn import preprocessing
+from sklearn.metrics import precision_score, recall_score
+
+import sys
+ROOT = os.getcwd()
+if str(ROOT) not in sys.path:
+    sys.path.append(str(ROOT))
 from core.utils import load_data, set_gpu_limit, get_callbacks_list, write_score
 from core.model import model_classification
 
@@ -166,13 +167,16 @@ auc_score = 0
 write_score(path=os.path.join(result_path, file_result),
             mode_write="a",
             rows="STT",
-            cols=['F1', 'Acc'])
+            cols=['F1', 'Acc', "recall", "precision"])
 
 write_score(path=os.path.join(result_path, file_result),
             mode_write="a",
             rows="results",
             cols=np.around([f1_score(y_true, y_target, average='weighted'),
-                            accuracy_score(y_true, y_target)], decimals=4))
+                            accuracy_score(y_true, y_target),
+                            recall_score(y_true, y_target, average='weighted'),
+                            precision_score(y_true, y_target, average='weighted')],
+                           decimals=4))
 print("save results done!!")
 print("History training loading ...")
 cmd = 'tensorboard --logdir "path-tensorboard-logs/"'

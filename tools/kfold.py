@@ -1,10 +1,4 @@
 import os
-import shutil
-import sys
-ROOT = os.getcwd()
-if str(ROOT) not in sys.path:
-    sys.path.append(str(ROOT))
-
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import numpy as np
 import tensorflow as tf
@@ -14,8 +8,16 @@ from sklearn.metrics import f1_score
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedKFold
 from sklearn import preprocessing
+from sklearn.metrics import precision_score, recall_score
+
+import sys
+ROOT = os.getcwd()
+if str(ROOT) not in sys.path:
+    sys.path.append(str(ROOT))
+
 from core.utils import set_gpu_limit, load_data, save_dump, write_score, get_callbacks_list
 from core.model import model_classification
+
 
 # Parse command line arguments
 parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
@@ -122,7 +124,7 @@ file_result_k_fold = model_name + "-" + version + "-k-fold-results.txt"
 for cnt_k_fold in range(continue_k_fold, number_k_fold + 1):
 
     if cnt_k_fold == 1:
-        write_score(path=os.path.join(result_path, file_result_k_fold), rows="STT", cols=["F1", "Acc"])
+        write_score(path=os.path.join(result_path, file_result_k_fold), rows="STT", cols=["F1", "Acc", "recall", "precision"])
     roc_name = "roc-" + str(cnt_k_fold)
     folder_roc_cnt_k_fold = os.path.join(k_fold_path, roc_name)
 
@@ -172,7 +174,11 @@ for cnt_k_fold in range(continue_k_fold, number_k_fold + 1):
     write_score(path=os.path.join(result_path, file_result_k_fold),
                 mode_write="a",
                 rows="K=" + str(cnt_k_fold),
-                cols=np.around([f1_score(y_true, y_target, average='weighted'), accuracy_score(y_true, y_target)], decimals=4))
+                cols=np.around([f1_score(y_true, y_target, average='weighted'),
+                                accuracy_score(y_true, y_target),
+                                recall_score(y_true, y_target, average='weighted'),
+                                precision_score(y_true, y_target, average='weighted')],
+                               decimals=4))
 
     print("%s: %.2f%%" % (model.metrics_names[0], scores[0] * 100))
     print("%s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
