@@ -13,6 +13,7 @@ if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))
 from core.utils import load_data, set_gpu_limit, get_callbacks_list, write_score
 from core.model import model_classification
+from core.model_hsc_v1 import created_model_hsc_01
 
 
 # # Parse command line arguments
@@ -28,6 +29,7 @@ parser.add_argument("-train", "--train_data_path", default="./dataset/smids/SMID
 parser.add_argument("-val", "--val_data_path", default="./dataset/smids/SMIDS/dataset/smids_valid.data", help="data val")
 parser.add_argument("-test", "--test_data_path", default="./dataset/smids/SMIDS/dataset/smids_datatest.data", help="data test")
 parser.add_argument("-name", "--name_model", default="model_ai_name", help="model name")
+parser.add_argument("-activation_block", "--activation_block", default="relu", help="activation blocks")
 # parser.add_argument("-cls", "--number_class", default=3, type=int, help="number class")
 args = vars(parser.parse_args())
 
@@ -43,7 +45,7 @@ train_path = args["train_data_path"]
 val_path = args["val_data_path"]
 test_path = args["test_data_path"]
 model_name = args["name_model"]
-# num_classes = args["number_class"]
+activation_block = args["activation_block"]
 
 print("=========Start=========")
 if gpu_memory > 0:
@@ -65,7 +67,7 @@ metrics = [
     tfa.metrics.F1Score(num_classes=num_classes, average='weighted')
 ]
 
-model = model_classification(input_layer=ip_shape, num_class=num_classes)
+model = created_model_hsc_01(input_shape=ip_shape, number_class=num_classes, activation_block=activation_block, activation_dense='softmax')
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
               loss=tf.keras.losses.CategoricalCrossentropy(),
               metrics=metrics)
