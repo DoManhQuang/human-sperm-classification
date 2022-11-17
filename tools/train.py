@@ -30,7 +30,7 @@ parser.add_argument("-val", "--val_data_path", default="./dataset/smids/SMIDS/da
 parser.add_argument("-test", "--test_data_path", default="./dataset/smids/SMIDS/dataset/smids_datatest.data", help="data test")
 parser.add_argument("-name", "--name_model", default="model_ai_name", help="model name")
 parser.add_argument("-activation_block", "--activation_block", default="relu", help="activation blocks")
-# parser.add_argument("-cls", "--number_class", default=3, type=int, help="number class")
+parser.add_argument("--mode_model", default="model-base", help="model name")
 args = vars(parser.parse_args())
 
 # Set up parameters
@@ -46,6 +46,7 @@ val_path = args["val_data_path"]
 test_path = args["test_data_path"]
 model_name = args["name_model"]
 activation_block = args["activation_block"]
+mode_model = args["mode_model"]
 
 print("=========Start=========")
 if gpu_memory > 0:
@@ -67,7 +68,13 @@ metrics = [
     tfa.metrics.F1Score(num_classes=num_classes, average='weighted')
 ]
 
-model = created_model_hsc_01(input_shape=ip_shape, number_class=num_classes, activation_block=activation_block, activation_dense='softmax')
+print("loading model .....")
+dict_model = {
+    "model-base": model_classification(input_layer=ip_shape, num_class=num_classes, activation_block=activation_block, activation_dense='softmax'),
+    "hsc-v1": created_model_hsc_01(input_shape=ip_shape, number_class=num_classes, activation_block=activation_block, activation_dense='softmax')
+}
+
+model = dict_model[mode_model]
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
               loss=tf.keras.losses.CategoricalCrossentropy(),
               metrics=metrics)

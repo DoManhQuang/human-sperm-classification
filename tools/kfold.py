@@ -35,6 +35,7 @@ parser.add_argument("-ep", "--epochs", default=1, type=int, help="epochs trainin
 parser.add_argument("-bsize", "--bath_size", default=32, type=int, help="bath size training")
 parser.add_argument("-verbose", "--verbose", default=1, type=int, help="verbose training")
 parser.add_argument("-activation_block", "--activation_block", default="relu", help="activation blocks")
+parser.add_argument("--mode_model", default="model-base", help="model name")
 args = vars(parser.parse_args())
 
 # Set up paramet
@@ -51,6 +52,7 @@ continue_k_fold = args["continue_k_fold"]
 train_path = args["train_data_path"]
 test_path = args["test_data_path"]
 activation_block = args["activation_block"]
+mode_model = args["mode_model"]
 
 print("=======START=======")
 if gpu_memory > 0:
@@ -74,12 +76,19 @@ metrics = [
     tfa.metrics.F1Score(num_classes=num_classes, average='weighted')
 ]
 
-model = created_model_hsc_01(input_shape=ip_shape, number_class=num_classes, activation_block=activation_block, activation_dense='softmax')
+print("loading model .....")
+dict_model = {
+    "model-base": model_classification(input_layer=ip_shape, num_class=num_classes, activation_block=activation_block, activation_dense='softmax'),
+    "hsc-v1": created_model_hsc_01(input_shape=ip_shape, number_class=num_classes, activation_block=activation_block, activation_dense='softmax')
+}
+
+model = dict_model[mode_model]
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
               loss=tf.keras.losses.CategoricalCrossentropy(),
               metrics=metrics)
 weights_init = model.get_weights()
 model.summary()
+print("loading model done !!")
 
 # created folder
 if not os.path.exists(result_path):
@@ -119,10 +128,7 @@ if number_k_fold > 0 and continue_k_fold == 1:
         print("created file : ", os.path.join(k_fold_path, file_k_fold_test))
         cnt_k_fold += 1
 
-
-fold_dict = {}
-pred_folds_list = []
-cvscores = []
+cv_scores = []
 file_result_k_fold = model_name + "-" + version + "-k-fold-results.txt"
 for cnt_k_fold in range(continue_k_fold, number_k_fold + 1):
 
@@ -154,7 +160,6 @@ for cnt_k_fold in range(continue_k_fold, number_k_fold + 1):
 
     # train model
     print("K-Fold =", cnt_k_fold)
-    fold_dict = dict()
     y_train_one_hot = tf.keras.utils.to_categorical(y_train, num_classes=num_classes)
     y_test_one_hot = tf.keras.utils.to_categorical(y_test, num_classes=num_classes)
     model.set_weights(weights_init)
@@ -169,8 +174,6 @@ for cnt_k_fold in range(continue_k_fold, number_k_fold + 1):
     scores = model.evaluate(X_test, y_test_one_hot, verbose=verbose)
 
     y_predict = model.predict(X_test)
-    pred_folds_list.append(fold_dict)
-
     y_true = np.argmax(y_test_one_hot, axis=1)
     y_target = np.argmax(y_predict, axis=1)
 
@@ -185,9 +188,9 @@ for cnt_k_fold in range(continue_k_fold, number_k_fold + 1):
 
     print("%s: %.2f%%" % (model.metrics_names[0], scores[0] * 100))
     print("%s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
-    cvscores.append(scores[1] * 100)
+    cv_scores.append(scores[1] * 100)
 
-print("%.2f%% (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores)))
+print("%.2f%% (+/- %.2f%%)" % (np.mean(cv_scores), np.std(cv_scores)))
 
 # # Deleting an non-empty folder
 # shutil.rmtree(diractory, ignore_errors=True)
