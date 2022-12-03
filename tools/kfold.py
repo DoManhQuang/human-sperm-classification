@@ -18,6 +18,7 @@ if str(ROOT) not in sys.path:
 from core.utils import set_gpu_limit, load_data, save_dump, write_score, get_callbacks_list
 from core.model import model_classification
 from core.model_hsc_v1 import created_model_hsc_01
+from core.model_segReLU import model_classification_segReLU
 
 
 # Parse command line arguments
@@ -28,8 +29,8 @@ parser.add_argument("-kp", "--k_fold_path", default="./runs/k-fold", help="path 
 parser.add_argument("-rp", "--result_path", default="./runs/results", help="path result ")
 parser.add_argument("-nk", "--number_k_fold", default=2, type=int, help="number k-fold")
 parser.add_argument("-ck", "--continue_k_fold", default=1, type=int, help="continue k-fold")
-parser.add_argument("-train", "--train_data_path", default="./dataset/smids/SMIDS/dataset/smids_datatrain.data", help="data train")
-parser.add_argument("-test", "--test_data_path", default="./dataset/smids/SMIDS/dataset/smids_datatest.data", help="data test")
+parser.add_argument("-train", "--train_data_path", default="dataset/SCIAN/scian_datatrain.data", help="data train")
+parser.add_argument("-test", "--test_data_path", default="dataset/SCIAN/scian_datatest.data", help="data test")
 parser.add_argument("-name", "--name_model", default="model_ai_name", help="model name")
 parser.add_argument("-ep", "--epochs", default=1, type=int, help="epochs training")
 parser.add_argument("-bsize", "--bath_size", default=32, type=int, help="bath size training")
@@ -55,6 +56,7 @@ activation_block = args["activation_block"]
 mode_model = args["mode_model"]
 
 print("=======START=======")
+print("activation_block:", activation_block)
 if gpu_memory > 0:
     set_gpu_limit(int(gpu_memory))  # set GPU
 
@@ -78,8 +80,9 @@ metrics = [
 
 print("loading model .....")
 dict_model = {
-    "model-base": model_classification(input_layer=ip_shape, num_class=num_classes, activation_block=activation_block, activation_dense='softmax'),
-    "hsc-v1": created_model_hsc_01(input_shape=ip_shape, number_class=num_classes, activation_block=activation_block, activation_dense='softmax')
+    # "model-base": model_classification(input_layer=ip_shape, num_class=num_classes, activation_block=activation_block, activation_dense='softmax'),
+    # "hsc-v1": created_model_hsc_01(input_shape=ip_shape, number_class=num_classes, activation_block=activation_block, activation_dense='softmax'),
+    "model-segReLU": model_classification_segReLU(input_layer=ip_shape, num_class=num_classes, activation_block=activation_block, activation_dense='softmax')
 }
 
 model = dict_model[mode_model]
