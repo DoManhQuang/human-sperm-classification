@@ -3,7 +3,7 @@ from keras.layers import Conv2D, Dropout, GlobalAveragePooling2D
 from keras.layers import Dense, BatchNormalization, MaxPooling2D, concatenate
 from keras.layers.pooling import AveragePooling2D
 from keras.models import Model
-
+from core.utils_activation import activation_functions
 
 def block_conv_a(x, filter_cnv_a, filter_cnv_b, filter_cnv_c, activation_block='relu', name="Block_Conv_A"):
     convA = Conv2D(filter_cnv_a, kernel_size=(3, 3), strides=(2, 2), activation=activation_block, padding='same')(x)
@@ -133,7 +133,7 @@ def created_model_small(input_layer, activation_block='relu', name="Model_small"
 
 def model_classification(input_layer, num_class=2, activation_block='relu', activation_dense='softmax'):
     input_layer = Input(shape=input_layer)
-    x = created_model_medium(input_layer, activation_block=activation_block)
+    x = created_model_medium(input_layer, activation_block=activation_functions[activation_block])
     x = GlobalAveragePooling2D()(x)
     x = Dropout(0.5)(x)
     x = Dense(num_class, activation=activation_dense)(x)
