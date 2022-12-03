@@ -3,11 +3,34 @@ from keras.layers import Conv2D, Dropout, GlobalAveragePooling2D
 from keras.layers import Dense, BatchNormalization, MaxPooling2D, concatenate
 from keras.layers.pooling import AveragePooling2D
 from keras.models import Model
-from core.utils_activation import activation_functions
+import tensorflow as tf
+from keras.layers import ReLU, ELU, LeakyReLU
+from keras import backend as K
 
 
+def seg_relu(x):
+    return K.switch(x > 0, x, K.softsign(x))
+# class SegReLU(Layer):
+#     def __init__(self, **kwargs):
+#         super().__init__(**kwargs)
+#     def call(self, inputs):
+#         # alpha is used for leaky relu slope in activations instead of
+#         # negative_slope.
+#         return K.switch(inputs > 0, inputs, K.softsign(inputs))
+#     def compute_output_shape(self, input_shape):
+#         return input_shape
 
-def block_conv_a(x, filter_cnv_a, filter_cnv_b, filter_cnv_c, activation_block='relu', name="Block_Conv_A"):
+dict_activation = {
+    'relu': ReLU(),
+    'ELU': ELU(),
+    'LeakyReLU': LeakyReLU(),
+    'seg_relu': seg_relu
+}
+
+activation_algorithm = dict_activation['seg_relu']
+# activation_algorithm = dict_activation['relu']
+
+def block_conv_a(x, filter_cnv_a, filter_cnv_b, filter_cnv_c, activation_block=activation_algorithm, name="Block_Conv_A"):
     convA = Conv2D(filter_cnv_a, kernel_size=(3, 3), strides=(2, 2), activation=activation_block, padding='same')(x)
     convA = Conv2D(filter_cnv_a, kernel_size=(1, 1), strides=(1, 1), activation=activation_block, padding='same')(convA)
     filter_cnv_a = filter_cnv_a / 2
@@ -30,7 +53,7 @@ def block_conv_a(x, filter_cnv_a, filter_cnv_b, filter_cnv_c, activation_block='
     return output
 
 
-def block_conv_b(x, filter_cnv_a, filter_cnv_b, activation_block='relu', name="Block_Conv_B"):
+def block_conv_b(x, filter_cnv_a, filter_cnv_b, activation_block=activation_algorithm, name="Block_Conv_B"):
     convA = Conv2D(filter_cnv_a, kernel_size=(5, 5), strides=(2, 2), activation=activation_block, padding='same')(x)
     convA = Conv2D(filter_cnv_a, kernel_size=(1, 1), strides=(1, 1), activation=activation_block, padding='same')(convA)
     filter_cnv_a = filter_cnv_a / 2
@@ -48,7 +71,7 @@ def block_conv_b(x, filter_cnv_a, filter_cnv_b, activation_block='relu', name="B
     return output
 
 
-def block_identity_a(x, filter_cnv_a, filter_cnv_b, activation_block='relu', name="Block_Identity_A"):
+def block_identity_a(x, filter_cnv_a, filter_cnv_b, activation_block=activation_algorithm, name="Block_Identity_A"):
     convA = Conv2D(filter_cnv_a, kernel_size=(3, 3), strides=(1, 1), activation=activation_block, padding='same')(x)
     convA = Conv2D(filter_cnv_a, kernel_size=(1, 1), strides=(1, 1), activation=activation_block, padding='same')(convA)
     filter_cnv_a = filter_cnv_a / 2
@@ -67,7 +90,7 @@ def block_identity_a(x, filter_cnv_a, filter_cnv_b, activation_block='relu', nam
     return output
 
 
-def block_identity_b(x, filter_cnv_a, filter_cnv_b, activation_block='relu', name="Block_Identity_B"):
+def block_identity_b(x, filter_cnv_a, filter_cnv_b, activation_block=activation_algorithm, name="Block_Identity_B"):
     convA = Conv2D(filter_cnv_a, kernel_size=(5, 5), strides=(1, 1), activation=activation_block, padding='same')(x)
     convA = Conv2D(filter_cnv_a, kernel_size=(1, 1), strides=(1, 1), activation=activation_block, padding='same')(convA)
     filter_cnv_a = filter_cnv_a / 2
@@ -82,7 +105,7 @@ def block_identity_b(x, filter_cnv_a, filter_cnv_b, activation_block='relu', nam
     return output
 
 
-def block_stem(x, filter_cnv_a, activation_block='relu', name="Block_Stem"):
+def block_stem(x, filter_cnv_a, activation_block=activation_algorithm, name="Block_Stem"):
     convA = Conv2D(filter_cnv_a, kernel_size=(7, 7), strides=(1, 1), activation=activation_block, padding='same')(x)
     convA = Conv2D(filter_cnv_a, kernel_size=(1, 1), strides=(1, 1), activation=activation_block, padding='same')(convA)
     convA = MaxPooling2D((2, 2))(convA)
@@ -94,7 +117,7 @@ def block_stem(x, filter_cnv_a, activation_block='relu', name="Block_Stem"):
     return convA
 
 
-def created_model_medium(input_layer, activation_block='relu', name="Model_Medium"):
+def created_model_medium(input_layer, activation_block=activation_algorithm, name="Model_Medium"):
     xS = block_stem(input_layer, filter_cnv_a=256, activation_block=activation_block, name="Block_Stem")
     xS = MaxPooling2D((2, 2), name="MaxPooling2D_S")(xS)
 
@@ -114,7 +137,7 @@ def created_model_medium(input_layer, activation_block='relu', name="Model_Mediu
     return output
 
 
-def created_model_small(input_layer, activation_block='relu', name="Model_small"):
+def created_model_small(input_layer, activation_block=activation_algorithm, name="Model_small"):
     xS = block_stem(input_layer, filter_cnv_a=256, activation_block=activation_block, name="Block_Stem")
     xS = AveragePooling2D((2, 2), name="AveragePooling2D_1")(xS)
 
@@ -133,9 +156,9 @@ def created_model_small(input_layer, activation_block='relu', name="Model_small"
     return xB
 
 
-def model_classification(input_layer, num_class=2, activation_block='relu', activation_dense='softmax'):
+def model_classification_segReLU(input_layer, num_class=2, activation_block=activation_algorithm, activation_dense='softmax'):
     input_layer = Input(shape=input_layer)
-    x = created_model_medium(input_layer, activation_block=activation_functions[activation_block])
+    x = created_model_medium(input_layer, activation_block=dict_activation[str(activation_block)])
     x = GlobalAveragePooling2D()(x)
     x = Dropout(0.5)(x)
     x = Dense(num_class, activation=activation_dense)(x)
