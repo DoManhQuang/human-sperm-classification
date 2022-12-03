@@ -6,7 +6,7 @@ from keras.models import Model
 import tensorflow as tf
 from keras.layers import ReLU, ELU, LeakyReLU
 from keras import backend as K
-from keras.engine.base_layer import Layer
+
 
 def seg_relu(x):
     return K.switch(x > 0, x, K.softsign(x))
