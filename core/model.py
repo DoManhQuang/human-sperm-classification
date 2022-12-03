@@ -5,6 +5,8 @@ from keras.layers.pooling import AveragePooling2D
 from keras.models import Model
 from core.utils_activation import activation_functions
 
+
+
 def block_conv_a(x, filter_cnv_a, filter_cnv_b, filter_cnv_c, activation_block='relu', name="Block_Conv_A"):
     convA = Conv2D(filter_cnv_a, kernel_size=(3, 3), strides=(2, 2), activation=activation_block, padding='same')(x)
     convA = Conv2D(filter_cnv_a, kernel_size=(1, 1), strides=(1, 1), activation=activation_block, padding='same')(convA)
