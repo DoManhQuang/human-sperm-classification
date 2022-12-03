@@ -19,7 +19,7 @@ from core.utils import set_gpu_limit, load_data, save_dump, write_score, get_cal
 from core.model import model_classification
 from core.model_hsc_v1 import created_model_hsc_01
 # from core.model_segReLU import model_classification_segReLU
-from core.utils_activation import activation_functions
+
 
 
 # Parse command line arguments
@@ -81,9 +81,8 @@ metrics = [
 
 print("loading model .....")
 dict_model = {
-    "model-base": model_classification(input_layer=ip_shape, num_class=num_classes, activation_block=activation_functions[activation_block], activation_dense='softmax'),
-    "hsc-v1": created_model_hsc_01(input_shape=ip_shape, number_class=num_classes, activation_block=activation_functions[activation_block], activation_dense='softmax'),
-    "model-segReLU": model_classification(input_layer=ip_shape, num_class=num_classes, activation_block=activation_functions[activation_block], activation_dense='softmax')
+    "model-base": model_classification(input_layer=ip_shape, num_class=num_classes, activation_block=activation_block, activation_dense='softmax'),
+    "hsc-v1": created_model_hsc_01(input_shape=ip_shape, number_class=num_classes, activation_block=activation_block, activation_dense='softmax')
 }
 
 model = dict_model[mode_model]
