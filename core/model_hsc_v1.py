@@ -4,7 +4,7 @@ from keras.layers import Dense, BatchNormalization, MaxPooling2D, concatenate, A
 from keras.layers.pooling import AveragePooling2D
 from keras.models import Model
 from keras.utils import plot_model
-
+from core.utils_activation import activation_functions
 
 def block_stem(x, filter_cnv, pool_size=(2, 2), kernel_size=7, strides=1,  activation='relu', padding='same', name="Block_Stem"):
     conv_stem = Conv2D(filter_cnv, kernel_size=kernel_size, strides=strides, activation=activation, padding=padding)(x)
@@ -61,7 +61,7 @@ def created_model_hsc_01(input_shape, number_class=2, activation_dense='softmax'
     input_layer = Input(shape=input_shape)
     x = block_stem(x=input_layer, filter_cnv=64, pool_size=(2, 2), kernel_size=7, strides=1, activation='relu', padding='same', name="Block_Stem")
     x = block_conv(x=x, filter_block=64, activation='relu', padding='same', name="block_conv_a")
-    x = block_identity_group(x=x, filter_blocks=[64, 128], activation=activation_block, padding='same', name="block_identity_group_a")
+    x = block_identity_group(x=x, filter_blocks=[64, 128], activation=activation_functions[activation_block], padding='same', name="block_identity_group_a")
     x = Flatten()(x)
     x = Dropout(0.5)(x)
     x = Dense(number_class, activation=activation_dense)(x)
