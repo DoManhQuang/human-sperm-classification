@@ -18,8 +18,6 @@ if str(ROOT) not in sys.path:
 from core.utils import set_gpu_limit, load_data, save_dump, write_score, get_callbacks_list
 from core.model import model_classification
 from core.model_hsc_v1 import created_model_hsc_01
-# from core.model_segReLU import model_classification_segReLU
-
 
 
 # Parse command line arguments
@@ -38,9 +36,13 @@ parser.add_argument("-bsize", "--bath_size", default=32, type=int, help="bath si
 parser.add_argument("-verbose", "--verbose", default=1, type=int, help="verbose training")
 parser.add_argument("-activation_block", "--activation_block", default="relu", help="activation blocks")
 parser.add_argument("--mode_model", default="model-base", help="model name")
+parser.add_argument("-status_ckpt", default=True, type=bool, help="True or False")
+parser.add_argument("-status_early_stop", default=True, type=bool, help="True or False")
 args = vars(parser.parse_args())
 
 # Set up paramet
+status_ckpt = args["status_ckpt"]
+status_early_stop = args["status_early_stop"]
 epochs = args["epochs"]
 bath_size = args["bath_size"]
 verbose = args["verbose"]
@@ -76,7 +78,8 @@ num_classes = len(np.unique(y))
 ip_shape = X[0].shape
 
 metrics = [
-    tfa.metrics.F1Score(num_classes=num_classes, average='weighted')
+    # tfa.metrics.F1Score(num_classes=num_classes, average='weighted'),
+    tf.keras.metrics.CategoricalCrossentropy()
 ]
 
 print("loading model .....")
@@ -86,7 +89,7 @@ dict_model = {
 }
 
 model = dict_model[mode_model]
-model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
               loss=tf.keras.losses.CategoricalCrossentropy(),
               metrics=metrics)
 weights_init = model.get_weights()
@@ -142,18 +145,18 @@ for cnt_k_fold in range(continue_k_fold, number_k_fold + 1):
 
     file_ckpt_model = model_name + "-" + version + "-weights-best-k-fold-" + str(cnt_k_fold) + ".h5"
     print("file check point : ", file_ckpt_model)
-    flag_checkpoint = True
+    flag_checkpoint = status_ckpt
     # callback list
     callbacks_list, save_list = get_callbacks_list(folder_roc_cnt_k_fold,
-                                                   status_tensorboard=False,
+                                                   status_tensorboard=True,
                                                    status_checkpoint=flag_checkpoint,
-                                                   status_earlystop=False,
+                                                   status_earlystop=status_early_stop,
                                                    file_ckpt=file_ckpt_model,
                                                    ckpt_monitor='val_f1_score',
                                                    ckpt_mode='max',
                                                    early_stop_monitor="val_loss",
                                                    early_stop_mode="min",
-                                                   early_stop_patience=2
+                                                   early_stop_patience=20
                                                    )
 
     file_k_fold_train = "k-fold-" + str(cnt_k_fold) + "-train-dataset.data"
