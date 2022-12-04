@@ -3,8 +3,12 @@ from keras.layers import Conv2D, Dropout, GlobalAveragePooling2D
 from keras.layers import Dense, BatchNormalization, MaxPooling2D, concatenate
 from keras.layers.pooling import AveragePooling2D
 from keras.models import Model
+import sys
+import os
+ROOT = os.getcwd()
+if str(ROOT) not in sys.path:
+    sys.path.append(str(ROOT))
 from core.utils_activation import activation_functions
-
 
 
 def block_conv_a(x, filter_cnv_a, filter_cnv_b, filter_cnv_c, activation_block='relu', name="Block_Conv_A"):
