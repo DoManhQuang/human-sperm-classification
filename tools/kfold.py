@@ -79,7 +79,8 @@ ip_shape = X[0].shape
 
 metrics = [
     # tfa.metrics.F1Score(num_classes=num_classes, average='weighted'),
-    tf.keras.metrics.CategoricalCrossentropy()
+    # tf.keras.metrics.CategoricalCrossentropy(),
+    tf.keras.metrics.CategoricalAccuracy()
 ]
 
 print("loading model .....")
@@ -146,13 +147,14 @@ for cnt_k_fold in range(continue_k_fold, number_k_fold + 1):
     file_ckpt_model = model_name + "-" + version + "-weights-best-k-fold-" + str(cnt_k_fold) + ".h5"
     print("file check point : ", file_ckpt_model)
     flag_checkpoint = status_ckpt
+    print("status checkpoint: ", flag_checkpoint, type(flag_checkpoint))
     # callback list
     callbacks_list, save_list = get_callbacks_list(folder_roc_cnt_k_fold,
                                                    status_tensorboard=True,
                                                    status_checkpoint=flag_checkpoint,
                                                    status_earlystop=status_early_stop,
                                                    file_ckpt=file_ckpt_model,
-                                                   ckpt_monitor='val_f1_score',
+                                                   ckpt_monitor='val_categorical_accuracy',
                                                    ckpt_mode='max',
                                                    early_stop_monitor="val_loss",
                                                    early_stop_mode="min",
