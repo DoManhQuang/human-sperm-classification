@@ -17,7 +17,7 @@ python tools/train.py \
 -v "version-0.0" -ep 10 -bsize 16 -verbose 1 \
 -train "./dataset/smids/smids_datatrain.data" \
 -test "./dataset/smids/smids_datatest.data" \
---activation_block "relu" \
+-activation_block "relu" \
 --mode_model "model-base" \
 --result_path "./runs/results" \
 --training_path "./runs/training" \
