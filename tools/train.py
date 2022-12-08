@@ -6,6 +6,7 @@ from sklearn.metrics import f1_score, accuracy_score
 from sklearn import preprocessing
 from sklearn.metrics import precision_score, recall_score
 from sklearn.model_selection import train_test_split
+from keras.utils import to_categorical
 import sys
 ROOT = os.getcwd()
 if str(ROOT) not in sys.path:
@@ -33,9 +34,11 @@ parser.add_argument("-activation_block", default="relu", help="optional relu")
 parser.add_argument("-status_ckpt", default=True, type=bool, help="True or False")
 parser.add_argument("-status_early_stop", default=True, type=bool, help="True or False")
 parser.add_argument("-test_size", default=0.2, type=float, help="split data train")
+parser.add_argument("-mode_labels", default="category", help="mode labels train test (binary or category)")
 args = vars(parser.parse_args())
 
 # Set up parameters
+mode_labels = args["mode_labels"]
 version = args["version"]
 training_path = args["training_path"]
 result_path = args["result_path"]
@@ -148,6 +151,11 @@ lb = preprocessing.LabelBinarizer()
 labels_train_one_hot = lb.fit_transform(train_labels)
 labels_valid_one_hot = lb.fit_transform(valid_labels)
 labels_test_one_hot = lb.fit_transform(global_labels_test)
+
+if mode_labels == "binary":
+    labels_train_one_hot = to_categorical(labels_train_one_hot)
+    labels_valid_one_hot = to_categorical(labels_valid_one_hot)
+    labels_test_one_hot = to_categorical(labels_test_one_hot)
 
 print("TRAIN : ", train_data.shape, "-", labels_train_one_hot.shape)
 print("VALID : ", valid_data.shape, "-", labels_valid_one_hot.shape)
