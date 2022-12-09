@@ -38,9 +38,11 @@ parser.add_argument("-activation_block", "--activation_block", default="relu", h
 parser.add_argument("--mode_model", default="model-base", help="model name")
 parser.add_argument("-status_ckpt", default=True, type=bool, help="True or False")
 parser.add_argument("-status_early_stop", default=True, type=bool, help="True or False")
+parser.add_argument("-mode_labels", default="category", help="mode labels train test (binary or category)")
 args = vars(parser.parse_args())
 
 # Set up paramet
+mode_labels = args["mode_labels"]
 status_ckpt = args["status_ckpt"]
 status_early_stop = args["status_early_stop"]
 epochs = args["epochs"]
@@ -66,12 +68,14 @@ if gpu_memory > 0:
 global_dataset_train, global_labels_train = load_data(train_path)
 global_dataset_test, global_labels_test = load_data(test_path)
 X = np.concatenate((global_dataset_train, global_dataset_test), axis=0)
-y_labels_name = np.concatenate((global_labels_train, global_labels_test), axis=0)
+y = np.concatenate((global_labels_train, global_labels_test), axis=0)
 
 print("===Labels fit transform ===")
 lb = preprocessing.LabelBinarizer()
-y_label_one_hot = lb.fit_transform(y_labels_name)
-y = np.argmax(y_label_one_hot, axis=1)
+y = lb.fit_transform(y)
+
+if mode_labels == "category":
+    y = np.argmax(y, axis=1)
 
 print(X.shape, y.shape)
 num_classes = len(np.unique(y))
